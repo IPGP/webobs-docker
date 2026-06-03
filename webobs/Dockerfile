@@ -106,18 +106,18 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
 
 ## Run WebObs setup 
 
-RUN cd $INSTALL_DIR \
-    && WebObs-${WO_VERSION}/SETUP/setup -a
+#RUN cd $INSTALL_DIR \
+#    && WebObs-${WO_VERSION}/SETUP/setup -a
 
 ## Switch to wo
 
-USER wo
+#USER wo
 
 ## Start WebObs
 
-RUN cd $INSTALL_DIR && \
-    CODE/shells/postboard start && \
-    CODE/shells/scheduler start
+#RUN cd $INSTALL_DIR && \
+#    CODE/shells/postboard start && \
+#    CODE/shells/scheduler start
 
 # Start sshd in foreground - useful for "detached" mode
 CMD /usr/sbin/sshd -D
