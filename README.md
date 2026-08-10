@@ -13,9 +13,18 @@ Ideal for observatories, research institutions, and geoscientists who want a por
 - Persistent volumes for data, configuration, and logs
 - Compatible with Linux/macOS/Windows (via Docker Desktop)
 
+**Create secrets**
+```bash
+mkdir -p secrets
+echo -n 'someStrongPassword' > secrets/root_password.txt
+echo -n 'someOtherStrongPassword'   > secrets/wo_password.txt
+chmod 600 secrets/*.txt
+```
+
 **Quick start:**
 ```bash
 git clone https://github.com/IPGP/webobs-docker.git
 cd webobs-docker
-docker compose up -d
+docker compose up -d --build
 ```
+

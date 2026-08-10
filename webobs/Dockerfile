@@ -50,16 +50,12 @@ RUN apt-get autoremove -y --purge \
 ## Setup ssh access
 
 RUN mkdir -p /var/run/sshd \
-    # Generate SSH host keys 
+    # Generate SSH host keys
     && ssh-keygen -A \
-    && sed -i'' -e's/^#X11UseLocalhost yes$/X11UseLocalhost no/' /etc/ssh/sshd_config \
-    && sed -i'' -e's/^#AllowAgentForwarding yes$/AllowAgentForwarding yes/' /etc/ssh/sshd_config \
-    && sed -i'' -e's/^#PermitRootLogin prohibit-password$/PermitRootLogin yes/' /etc/ssh/sshd_config \
-    && sed -i'' -e's/^#PasswordAuthentication yes$/PasswordAuthentication yes/' /etc/ssh/sshd_config \
-    && sed -i'' -e's/^#PermitEmptyPasswords no$/PermitEmptyPasswords yes/' /etc/ssh/sshd_config \
-    && sed -i'' -e's/^UsePAM yes/UsePAM no/' /etc/ssh/sshd_config \
-    # SSH login fix. Otherwise user is kicked off after login
-    && sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+    && sed -i -E 's/^#?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i -E 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config \
+    && sed -i -E 's/^#?PermitEmptyPasswords.*/PermitEmptyPasswords no/' /etc/ssh/sshd_config \
+    && sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd
 
 # Expose SSH TCP port
 EXPOSE 22
@@ -67,9 +63,6 @@ EXPOSE 22
 EXPOSE 80
 # Expose HTTPS TCP port
 EXPOSE 443
-
-# Set root password to 'password'
-RUN echo 'root:password' | chpasswd
 
 ## Directories
 
@@ -122,6 +115,11 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
 #RUN cd $INSTALL_DIR && \
 #    CODE/shells/postboard start && \
 #    CODE/shells/scheduler start
+
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Start sshd in foreground - useful for "detached" mode
 CMD /usr/sbin/sshd -D

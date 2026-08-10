@@ -8,3 +8,17 @@ services:
             - "8080:80"
             - "4443:443"
         tty: true        
+        secrets:
+            - root_password
+            - wo_password
+        volumes:
+            - webobs_state:/var/lib/webobs-docker
+
+secrets:
+    root_password:
+        file: ./secrets/root_password.txt
+    wo_password:
+        file: ./secrets/wo_password.txt
+
+volumes:
+    webobs_state:
