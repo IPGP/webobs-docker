@@ -31,4 +31,13 @@ if [[ ! -f "$MARKER" ]]; then
     touch "$MARKER"
 fi
 
+# echo "[entrypoint] Starting Apache "
+apache2ctl start || echo "Error starting Apache: /var/log/apache2/error.log" >&2
+ 
+# echo "[entrypoint] Starting postboard and scheduler "
+cd ${INSTALL_DIR} && \
+    CODE/shells/postboard start && \
+    CODE/shells/scheduler start
+ 
+echo "[entrypoint] Starting : $*"
 exec "$@"
