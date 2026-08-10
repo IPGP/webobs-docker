@@ -6,7 +6,7 @@ LABEL description="Docker image running WebObs on Debian 12."
 
 ## Environment variables
 # WebObs version
-ENV WO_VERSION=2.8.1
+ENV WO_VERSION=2.8.2
 # Directories
 ENV WORK_DIR=/opt
 ENV INSTALL_DIR=/opt/webobs
@@ -32,13 +32,17 @@ RUN apt-get install -y \
 RUN apt-get install -y \
         graphviz net-tools libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl
 RUN apt-get install -y \
-        libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl
+        libcgi-session-perl libdbd-sqlite3-perl libgraphviz-perl libimage-info-perl gdal-bin
 RUN apt-get install -y \
         libtext-multimarkdown-perl libswitch-perl libintl-perl liblist-moreutils-perl
 RUN apt-get install -y \
         poppler-utils libjson-perl libjson-xs-perl libnet-ldap-perl libhtml-escape-perl
 RUN apt-get install -y \
-        python-is-python3 libncurses5 wkhtmltopdf
+        python-is-python3 libncurses5 wkhtmltopdf libsocket6-perl libdigest-perl-md5-perl
+RUN apt-get install -y \
+        dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+RUN apt-get install -y \
+        python-is-python3 python3-tk python3-venv python3-pip-whl
         # Cleanup
 RUN apt-get autoremove -y --purge \
     && apt-get clean 
