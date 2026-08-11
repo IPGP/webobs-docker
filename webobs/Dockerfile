@@ -34,7 +34,7 @@ WORKDIR $WORK_DIR
 RUN apt-get update && apt-get dist-upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         # Generic tools
-        openssh-server openssl libssl-dev net-tools python3 python3-pip sudo wget vim git pipx unzip \
+        locales openssh-server openssl libssl-dev net-tools python3 python3-pip sudo wget vim git pipx unzip \
         # WebObs dependencies
         apache2 apache2-utils sqlite3 imagemagick pngquant qrencode jq mutt xvfb curl gawk \
         graphviz libdatetime-perl libdatetime-format-strptime-perl libdate-calc-perl \
@@ -93,6 +93,8 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="XPS" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml
 
 ## Run WebObs setup 
+## Will work when automation of the setup is integrated in the WebObs package. 
+## For now, the setup must be run manually after the container is started.
 #RUN cd $INSTALL_DIR \
 #    && WebObs-${WO_VERSION}/SETUP/setup -a
 
