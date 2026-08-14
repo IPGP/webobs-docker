@@ -4,6 +4,7 @@ set -euo pipefail
 STATE_DIR="/var/lib/webobs-docker"
 MARKER="$STATE_DIR/.initialized"
 mkdir -p "$STATE_DIR"
+WO_USER=$(stat -c '%U' ${INSTALL_DIR}/CONF)
 
 set_password() {
     local user="$1" env_var="$2"
@@ -27,7 +28,7 @@ set_password() {
 
 if [[ ! -f "$MARKER" ]]; then
     set_password root ROOT_PASSWORD
-    id wo &>/dev/null && set_password wo WO_PASSWORD
+    id "$WO_USER" &>/dev/null && set_password "$WO_USER" WO_PASSWORD
     touch "$MARKER"
 fi
 
@@ -35,9 +36,7 @@ fi
 apache2ctl start || echo "Error starting Apache: /var/log/apache2/error.log" >&2
  
 # echo "[entrypoint] Starting postboard and scheduler "
-cd ${INSTALL_DIR} && \
-    CODE/shells/postboard start && \
-    CODE/shells/scheduler start
- 
+su - "$WO_USER" -c "cd ${INSTALL_DIR} && CODE/shells/postboard start && CODE/shells/scheduler start"
+
 echo "[entrypoint] Starting : $*"
 exec "$@"
