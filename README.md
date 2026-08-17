@@ -28,3 +28,13 @@ cd webobs-docker
 docker compose up -d --build
 ```
 
+** Change WebObs web password **
+```bash
+docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd <wo_user>
+```
+
+Example for wo : 
+```bash
+docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd wo
+```
+
