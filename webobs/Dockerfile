@@ -7,7 +7,7 @@ LABEL description="Docker image running WebObs on Debian 12."
 ## Environment variables
 
 # WebObs version
-ENV WO_VERSION=2.8.2
+ENV WO_VERSION=2.8.3
 
 # Directories
 ENV WORK_DIR=/opt
@@ -73,6 +73,10 @@ RUN wget https://github.com/IPGP/webobs/releases/download/v${WO_VERSION}/WebObs-
     && tar xvfz WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
     && rm WebObs-${WO_VERSION}.tar.gz
 
+#COPY WebObs-${WO_VERSION}.tar.gz /opt/webobs/
+#RUN tar xvfz /opt/webobs/WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
+#    && rm /opt/webobs/WebObs-${WO_VERSION}.tar.gz
+
 ## Download Matlab MCR to $INSTALL_DIR (will be installed during setup)
 RUN wget --no-check-certificate -O ${INSTALL_DIR}/MCR_R2011b_glnxa64_installer.zip http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip
 #RUN wget -O ${INSTALL_DIR}/MATLAB_Runtime_R2023b_Update_6_glnxa64.zip -q https://ssd.mathworks.com/supportfiles/downloads/R2023b/Release/6/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2023b_Update_6_glnxa64.zip
@@ -94,10 +98,8 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="XPS" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml
 
 ## Run WebObs setup 
-## Will work when automation of the setup is integrated in the WebObs package. 
-## For now, the setup must be run manually after the container is started.
-#RUN cd $INSTALL_DIR \
-#    && WebObs-${WO_VERSION}/SETUP/setup -a
+RUN cd $INSTALL_DIR \
+    && WebObs-${WO_VERSION}/SETUP/setup -a
 
 ## Copy entrypoint script and set permissions
 COPY docker-entrypoint.sh /usr/local/bin/
