@@ -107,7 +107,8 @@ RUN curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_re
     && unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip \
     && sed -i'' -e's;^ETOPO_NAME|.*;ETOPO_NAME|etopo1_bed_g_i2;' /etc/webobs.d/WEBOBS.rc \
     && sed -i'' -e's;^ETOPO_COPYRIGHT|.*;ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA;' /etc/webobs.d/WEBOBS.rc \
-    && sed -i'' -e's;^ETOPO_SRTM_MERGE|.*;ETOPO_SRTM_MERGE|YES;' /etc/webobs.d/WEBOBS.rc
+    && sed -i'' -e's;^ETOPO_SRTM_MERGE|.*;ETOPO_SRTM_MERGE|YES;' /etc/webobs.d/WEBOBS.rc \
+    && rm /tmp/etopo.zip
 
 ## Copy entrypoint script and set permissions
 COPY docker-entrypoint.sh /usr/local/bin/
