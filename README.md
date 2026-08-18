@@ -23,7 +23,7 @@ git clone https://github.com/IPGP/webobs-docker.git
 cd webobs-docker
 ```
 
-### Create secrets**
+### Create secrets
 Sets manually the root and wo user passwords:
 ```bash
 mkdir -p secrets
@@ -38,10 +38,11 @@ docker compose up -d --build
 ```
 
 ### Change the web wo user password
+By default, the http password is the same as login password defined in the secrets step above. To change the first:
 ```bash
 docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd wo
 ```
 
 ### Access the WebObs interface
-Open the URL: [localhost:8080](http://localhost:8080)
+Open the URL: [localhost:8080](http://localhost:8080) and login to access WebObs.
 
