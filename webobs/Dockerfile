@@ -65,22 +65,8 @@ EXPOSE 443
 ## Directories
 RUN mkdir -p $INSTALL_DIR
 
-# WebObs version: get the latest release
-RUN WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
-    && WO_VERSION=${WO_LATEST:1}
-
-## Download WebObs distribution
-RUN wget https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz \
-    && tar xvfz WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
-    && rm WebObs-${WO_VERSION}.tar.gz
-
-#COPY WebObs-${WO_VERSION}.tar.gz /opt/webobs/
-#RUN tar xvfz /opt/webobs/WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
-#    && rm /opt/webobs/WebObs-${WO_VERSION}.tar.gz
-
 ## Download Matlab MCR to $INSTALL_DIR (will be installed during setup)
 RUN wget --no-check-certificate -O ${INSTALL_DIR}/MCR_R2011b_glnxa64_installer.zip http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip
-#RUN wget -O ${INSTALL_DIR}/MATLAB_Runtime_R2023b_Update_6_glnxa64.zip -q https://ssd.mathworks.com/supportfiles/downloads/R2023b/Release/6/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2023b_Update_6_glnxa64.zip
 
 ## Set locales
 RUN sed -i -e 's/^# \(en_US ISO-8859-1\)/\1/;s/^# \(fr_FR ISO-8859-1\)/\1/' /etc/locale.gen \
@@ -98,8 +84,14 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PDF" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml \
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="XPS" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml
 
-## Run WebObs setup 
-RUN cd $INSTALL_DIR \
+
+# Get the latest release, install WebObs and remove the tarball
+RUN WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
+    && WO_VERSION=${WO_LATEST#v} \
+    && wget https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz \
+    && tar xvfz WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
+    && rm WebObs-${WO_VERSION}.tar.gz \
+    && cd $INSTALL_DIR \
     && WebObs-${WO_VERSION}/SETUP/setup -a
 
 ## Install ETOPO1 worlwide topography and activate SRTM/ETOPO merge
