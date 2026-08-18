@@ -7,13 +7,24 @@ Ideal for observatories, research institutions, and geoscientists who want a por
 > **Work in progress** — This project is still under active development. Some features may not work as expected or may be incomplete. Contributions and bug reports are welcome!
 
 
-**Features:**
+## Features
 - Pre-configured Docker image based on the official WebObs distribution
 - docker-compose support for easy multi-service orchestration
 - Persistent volumes for data, configuration, and logs
 - Compatible with Linux/macOS/Windows (via Docker Desktop)
 
-**Create secrets**
+## Quick start
+Install the [Docker Desktop](https://www.docker.com/products/docker-desktop).
+
+From a terminal, clone the repository on your local disk:
+
+```bash
+git clone https://github.com/IPGP/webobs-docker.git
+cd webobs-docker
+```
+
+### Create secrets**
+Sets manually the root and wo user passwords:
 ```bash
 mkdir -p secrets
 echo -n 'someStrongPassword' > secrets/root_password.txt
@@ -21,20 +32,15 @@ echo -n 'someOtherStrongPassword'   > secrets/wo_password.txt
 chmod 600 secrets/*.txt
 ```
 
-**Quick start:**
+### Build the docker
 ```bash
-git clone https://github.com/IPGP/webobs-docker.git
-cd webobs-docker
 docker compose up -d --build
 ```
 
-** Change WebObs web password **
-```bash
-docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd <wo_user>
-```
-
-Example for wo : 
+### Change the web wo user password
 ```bash
 docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd wo
 ```
 
+### Access the WebObs interface
+Open the URL: [localhost:8080](http://localhost:8080)

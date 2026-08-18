@@ -6,9 +6,6 @@ LABEL description="Docker image running WebObs on Debian 12."
 
 ## Environment variables
 
-# WebObs version
-ENV WO_VERSION=2.8.3
-
 # Directories
 ENV WORK_DIR=/opt
 ENV INSTALL_DIR=/opt/webobs
@@ -68,8 +65,12 @@ EXPOSE 443
 ## Directories
 RUN mkdir -p $INSTALL_DIR
 
+# WebObs version: get the latest release
+RUN WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
+    && WO_VERSION=${WO_LATEST:1}
+
 ## Download WebObs distribution
-RUN wget https://github.com/IPGP/webobs/releases/download/v${WO_VERSION}/WebObs-${WO_VERSION}.tar.gz \
+RUN wget https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz \
     && tar xvfz WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
     && rm WebObs-${WO_VERSION}.tar.gz
 
@@ -100,6 +101,13 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
 ## Run WebObs setup 
 RUN cd $INSTALL_DIR \
     && WebObs-${WO_VERSION}/SETUP/setup -a
+
+## Install ETOPO1 worlwide topography and activate SRTM/ETOPO merge
+RUN curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip \
+    && unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip \
+    && sed -i'' -e's;^ETOPO_NAME|.*;ETOPO_NAME|etopo1_bed_g_i2;' /etc/webobs.d/WEBOBS.rc \
+    && sed -i'' -e's;^ETOPO_COPYRIGHT|.*;ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA;' /etc/webobs.d/WEBOBS.rc \
+    && sed -i'' -e's;^ETOPO_SRTM_MERGE|.*;ETOPO_SRTM_MERGE|YES;' /etc/webobs.d/WEBOBS.rc
 
 ## Copy entrypoint script and set permissions
 COPY docker-entrypoint.sh /usr/local/bin/
