@@ -95,16 +95,29 @@ RUN if [ ! -f /tmp/etopo.zip ]; then \
 
 # Try to copy WebObs tarball from build context, if not found, download the latest release from GitHub
 COPY WebObs-* $INSTALL_DIR/
+COPY version $INSTALL_DIR/
+
 RUN fichier=$(find "$INSTALL_DIR/" -maxdepth 1 -name "WebObs-*.tar.gz" -print -quit) \
     && if [ -n "$fichier" ]; then \
          fichier=$(basename "$fichier") \
          && WO_VERSION="${fichier#WebObs-}" \
          && WO_VERSION="${WO_VERSION%.tar.gz}"; \
        else \
-         WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
-         && WO_VERSION=${WO_LATEST#v} \
-         && wget -O "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" "https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz"; \
+         if [ -s "$INSTALL_DIR/version" ]; then \
+           WO_ASKED=$(tr -d '[:space:]' < "$INSTALL_DIR/version"); \
+         else \
+           WO_ASKED="latest"; \
+         fi \
+         && if [ "$WO_ASKED" = "latest" ]; then \
+              WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
+              && WO_VERSION=${WO_LATEST#v} \
+              && wget -O "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" "https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz"; \
+            else \
+              WO_VERSION="$WO_ASKED" \
+              && wget -O "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" "https://github.com/IPGP/webobs/releases/download/v${WO_VERSION}/WebObs-${WO_VERSION}.tar.gz"; \
+            fi; \
        fi \
+    && rm -f "$INSTALL_DIR/version" \
     && tar xvfz "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" -C "$INSTALL_DIR" \
     && rm "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" \
     && cd "$INSTALL_DIR" \
