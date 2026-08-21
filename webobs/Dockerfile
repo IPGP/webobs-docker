@@ -65,8 +65,11 @@ EXPOSE 443
 ## Directories
 RUN mkdir -p $INSTALL_DIR
 
-## Download Matlab MCR to $INSTALL_DIR (will be installed during setup)
-RUN wget --no-check-certificate -O ${INSTALL_DIR}/MCR_R2011b_glnxa64_installer.zip http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip
+## Try to copy MCR download Matlab MCR to $INSTALL_DIR (will be installed during setup)
+COPY MCR_R2011b* $INSTALL_DIR/
+RUN if [ ! -f $INSTALL_DIR/MCR_R2011b_glnxa64_installer.zip ]; then \
+        wget --no-check-certificate -O ${INSTALL_DIR}/MCR_R2011b_glnxa64_installer.zip http://www.ipgp.fr/~beaudu/webobs/MCR_Runtime/MCR_R2011b_glnxa64_installer.zip; \
+      fi
 
 ## Set locales
 RUN sed -i -e 's/^# \(en_US ISO-8859-1\)/\1/;s/^# \(fr_FR ISO-8859-1\)/\1/' /etc/locale.gen \
@@ -84,19 +87,31 @@ RUN sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PS" />\);<!-- 
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="PDF" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml \
     && sed -i'' -e's;\(<policy domain="coder" rights="none" pattern="XPS" />\);<!-- \1 -->;' /etc/ImageMagick-6/policy.xml
 
+# Try to copy ETOPO1 zip file from build context, if not found, download the latest release from GitHub
+COPY etopo* /tmp/etopo.zip
+RUN if [ ! -f /tmp/etopo.zip ]; then \
+        curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip; \
+      fi
 
-# Get the latest release, install WebObs and remove the tarball
-RUN WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
-    && WO_VERSION=${WO_LATEST#v} \
-    && wget https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz \
-    && tar xvfz WebObs-${WO_VERSION}.tar.gz -C $INSTALL_DIR \
-    && rm WebObs-${WO_VERSION}.tar.gz \
-    && cd $INSTALL_DIR \
-    && WebObs-${WO_VERSION}/SETUP/setup -a
+# Try to copy WebObs tarball from build context, if not found, download the latest release from GitHub
+COPY WebObs-* $INSTALL_DIR/
+RUN fichier=$(find "$INSTALL_DIR/" -maxdepth 1 -name "WebObs-*.tar.gz" -print -quit) \
+    && if [ -n "$fichier" ]; then \
+         fichier=$(basename "$fichier") \
+         && WO_VERSION="${fichier#WebObs-}" \
+         && WO_VERSION="${WO_VERSION%.tar.gz}"; \
+       else \
+         WO_LATEST=$(curl -s https://api.github.com/repos/IPGP/webobs/releases/latest | jq -r .tag_name) \
+         && WO_VERSION=${WO_LATEST#v} \
+         && wget -O "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" "https://github.com/IPGP/webobs/releases/download/${WO_LATEST}/WebObs-${WO_VERSION}.tar.gz"; \
+       fi \
+    && tar xvfz "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" -C "$INSTALL_DIR" \
+    && rm "$INSTALL_DIR/WebObs-${WO_VERSION}.tar.gz" \
+    && cd "$INSTALL_DIR" \
+    && "$INSTALL_DIR/WebObs-${WO_VERSION}/SETUP/setup" -a
 
-## Install ETOPO1 worlwide topography and activate SRTM/ETOPO merge
-RUN curl https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip -o /tmp/etopo.zip \
-    && unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip \
+    ## Install ETOPO1 worlwide topography and activate SRTM/ETOPO merge
+RUN unzip -d /etc/webobs.d/../DATA/DEM/ETOPO /tmp/etopo.zip \
     && sed -i'' -e's;^ETOPO_NAME|.*;ETOPO_NAME|etopo1_bed_g_i2;' /etc/webobs.d/WEBOBS.rc \
     && sed -i'' -e's;^ETOPO_COPYRIGHT|.*;ETOPO_COPYRIGHT|DEM: ETOPO1 NGDC/NOOA;' /etc/webobs.d/WEBOBS.rc \
     && sed -i'' -e's;^ETOPO_SRTM_MERGE|.*;ETOPO_SRTM_MERGE|YES;' /etc/webobs.d/WEBOBS.rc \
