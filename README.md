@@ -46,3 +46,39 @@ docker exec -it webobs /usr/bin/htpasswd /opt/webobs/CONF/htpasswd wo
 ### Access the WebObs interface
 Open the URL: [localhost:8080](http://localhost:8080) and login to access WebObs.
 
+## Install a specific version of WebObs
+
+You can install a specific version of WebObs by editing the `version` file located in the `webobs` folder of this repository and enter :
+
+- `latest` : if you want to install the latest release (default)
+- `MAJOR.MINOR.PATCH` : example : 2.8.3a
+
+## Using local installation files (Matlab, WebObs, etopo1)
+
+You can use local installation files to speed up the image build or to use specific versions.
+
+This applies to:
+
+- the [Matlab runtime (MCR)](https://fr.mathworks.com/products/compiler/matlab-runtime.html)
+- the [WebObs archive](https://github.com/IPGP/webobs/releases)
+- the [etopo1 archive](https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/bedrock/grid_registered/binary/etopo1_bed_g_i2.zip)
+
+The files should be placed in the `webobs` subfolder of this repository.
+
+Example directory structure:
+
+```bash
+├── compose.yml
+├── LICENSE
+├── README.md
+├── secrets
+│   ├── root_password.txt
+│   └── wo_password.txt
+└── webobs
+    ├── docker-entrypoint.sh
+    ├── Dockerfile
+    ├── etopo1.zip
+    ├── MCR_R2011b_glnxa64_installer.zip
+    ├── WebObs-2.8.3b.tar.gz
+    └── version
+```
